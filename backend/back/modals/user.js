@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     type:Boolean,
     require: true,
   },
+  isBlocked: {
+    type:Boolean,
+    require: true,
+  },
   role:{
     type:String,
     require:true
