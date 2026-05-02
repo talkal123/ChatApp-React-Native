@@ -99,21 +99,20 @@ router.post("/login", async (req, res) => {
 });
 
 
-router.delete("/delete_user/:id", authMiddleware, isAdminMiddleware, (req, res) => {
+router.delete("/delete_user/:userId", authMiddleware, isAdminMiddleware, (req, res) => {
   try {
-    const id = req.params.id;
+    const {userId} = req.params;
 
-    const findUser = users.find(u => u.id === id);
+    const findUser = users.find(u => u.id === userId);
 
     if (!findUser) {
       return res.status(404).json({ message: "משתמש לא נמצא" });
     }
 
-    users = users.filter(u => u.id !== id);
+    users = users.filter(u => u.id !== userId);
 
     return res.status(200).json({
       message: "משתמש נמחק",
-      users
     });
 
   } catch (error) {
