@@ -9,7 +9,7 @@ const { isAdminMiddleware } = require("../middleware/isAdminMiddleware.js");
 
 let users = require("../data/users.js");
 
-router.get("/all", authMiddleware, isAdminMiddleware, (req, res) => {
+router.get("/allUsers", authMiddleware, isAdminMiddleware, (req, res) => {
   res.json(users);
 });
 

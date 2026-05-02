@@ -18,17 +18,118 @@ router.get("/group", (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
+
+router.post("/groupChat",(req, res) => {
   try {
-    const userId = req.params.id;
-    const findChats = chats.filter(c => c.messages.some(m => m.senderId === userId))
-    res.status(200).json({ message: "צאט נמצא", findChats });
+    const { chatName, isGroupChat, user } = req.body;
+    if (!chatName || !user) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    
+    const newChat = {
+      chatName,
+      isGroupChat: isGroupChat || true,
+      users: [user],
+      createdBy:user,
+      id: String(Date.now()),
+      messages:[]
+    };
+    chats.push(newChat);
+    res.status(200).json({ message: "צאט התווסף", newChat });
   } catch (error) {
+    console.error("Error fetching chats:", error);
     return res.status(500).json({ message: "משהו נכשל" });
   }
 });
 
-router.post("/chat",(req, res) => {
+router.post("/groupChat/addUser",(req, res) => {
+  try {
+    const { chatName, user } = req.body;
+    if (!chatName || !user) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const findChat = chats.find(c => c.chatName === chatName)
+    if (!findChat) {
+      return res.status(400).json({ message: "לא נמצא צאט" });
+    }
+
+    const findUserInChat = findChat.users.find(u => u === user)
+    if (findUserInChat) {
+      return res.status(400).json({ message: "משתמש זה כבר נמצא בצאט" });
+    }
+     findChat.users.push(user);
+    res.status(200).json({ message: "משתמש התווסף", findChat });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return res.status(500).json({ message: "משהו נכשל" });
+  }
+});
+
+router.delete("/groupChat/deleteUser",(req, res) => {
+  try {
+    const { chatName, user } = req.body;
+    if (!chatName || !user) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const findChat = chats.find(c => c.chatName === chatName)
+    if (!findChat) {
+      return res.status(400).json({ message: "לא נמצא צאט" });
+    }
+
+    const findUserInChat = findChat.users.find(u => u === user)
+    if (!findUserInChat) {
+      return res.status(400).json({ message: "משתמש זה לא נמצא בצאט" });
+    }
+     findChat.users = findChat.users.filter(u => u !== user);
+    res.status(200).json({ message: "משתמש הוסר", findChat });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return res.status(500).json({ message: "משהו נכשל" });
+  }
+});
+
+// צאט לפי יוזר 
+
+router.get("/sender/:senderId", (req, res) => {
+  try {
+    const { senderId } = req.params;
+    if (!senderId) {
+      return res.status(401).json({ message: "לא נשלח יוזר איי די" });
+    }
+    const findChats = chats.filter(c => c.users.includes(senderId))
+     if (findChats.length === 0) {
+      return res.status(200).json({ message: "לא נמצאו צאטים למשתמש זה", findChats: [] });
+    }
+    return res.status(200).json({ message: "צאט נמצא", findChats });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return res.status(500).json({ message: "משהו נכשל" });
+  }
+});
+
+
+// מציאת צאט לפי איי די
+
+router.get("/:chatId", (req, res) => {
+  try {
+    const { chatId } = req.params;
+    if (!chatId) {
+      return res.status(401).json({ message: "לא נשלח chat איי די" });
+    }
+    const findChats = chats.filter(c => c.id === chatId)
+     if (findChats.length === 0) {
+      return res.status(200).json({ message: "לא נמצאו צאטים למשתמש זה", findChats: [] });
+    }
+    return res.status(200).json({ message: "צאט נמצא", findChats });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return res.status(500).json({ message: "משהו נכשל" });
+  }
+});
+
+router.post("/",(req, res) => {
   try {
     const { chatName, isGroupChat, user } = req.body;
     if (!chatName || !user) {
@@ -50,51 +151,6 @@ router.post("/chat",(req, res) => {
   }
 });
 
-router.post("/message", (req, res) => {
-  try {
-    const { message, user, chatId } = req.body;
-    if (!message || !user || !chatId) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-    const findChat = chats.find(c => c.id === chatId)
-    if (!findChat) {
-        return res.status(403).json({ message: "צאט לא קיים" });
-
-    }
-    const newMessage = {
-      message,
-      user,
-      id: String(Date.now()),
-      created: String(Date.now()),
-    };
-    findChat.messages.push(newMessage);
-    res.status(200).json({ message: "הודעה נוספה", newMessage });
-  } catch (error) {
-    return res.status(500).json({ message: "משהו נכשל" });
-  }
-});
-
-router.delete("/message", (req, res) => {
-  try {
-    const { messageId, chatId} = req.body;
-    if (!messageId || !chatId) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-    const findChat = chats.find(c => c.id === chatId)
-    if (!findChat) {
-        return res.status(404).json({ message: "אין צאט קיים" });
-    }
-    const findMessage = findChat.messages.find(c => c.id === messageId)
-    if (!findMessage) {
-        return res.status(404).json({ message: "לא נמצא הודעה" });
-    }
-    const removeMessage = findChat.messages.filter(m => m.id !== messageId)
-    findChat.messages = removeMessage
-    res.status(200).json({ message: "הודעה נמחקה" });
-  } catch (error) {
-    return res.status(500).json({ message: "משהו נכשל" });
-  }
-});
 
 router.delete("/:id", authMiddleware, (req, res) => {
   try {
