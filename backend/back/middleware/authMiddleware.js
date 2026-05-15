@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv")
-let users = require("../data/users")
+let users = require("../data/usersData")
 
 const authMiddleware = (req, res, next) => {
  try {

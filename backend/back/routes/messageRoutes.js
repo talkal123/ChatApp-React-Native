@@ -3,7 +3,7 @@ const router = express.Router();
 const dotenv = require("dotenv");
 
 
-let users = require("../data/users.js");
+let users = require("../data/usersData.js");
 let chats = require("../data/chatsData.js");
 const { authMiddleware } = require("../middleware/authMiddleware.js");
 

@@ -1,11 +1,9 @@
-import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Register from "./pages/Register";
-import textDb from "./textDb.json";
 
 export default function HomeScreen() {
-  const [messages, setMessages] = useState(textDb);
+  // const [messages setMessages] = useState(textDb);
 
   return (
     <SafeAreaProvider>
@@ -18,6 +16,7 @@ export default function HomeScreen() {
           <InputContainer messages={messages} setMessages={setMessages} />
         </View>
       </View> */}
+      <Text className="text-blue-500">sssssד</Text>
       <Register />
     </SafeAreaProvider>
   );

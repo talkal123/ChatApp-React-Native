@@ -7,7 +7,7 @@ const { authMiddleware } = require("../middleware/authMiddleware.js");
 const { authorization } = require("../middleware/authorization.js");
 const { isAdminMiddleware } = require("../middleware/isAdminMiddleware.js");
 
-let users = require("../data/users.js");
+let users = require("../data/usersData.js");
 
 router.get("/allUsers", authMiddleware, isAdminMiddleware, (req, res) => {
   res.json(users);
@@ -117,6 +117,41 @@ router.delete("/delete_user/:userId", authMiddleware, isAdminMiddleware, (req, r
 
   } catch (error) {
     return res.status(500).json({ message: "שגיאת שרת" });
+  }
+});
+
+router.put("/change_user/:userId",authMiddleware, (req, res) => {
+  try {
+    const user = req.user.id
+    const {userName,email,password} = req.body
+    const {userId} = req.params;
+
+    if (user !== userId) {
+      return res.status(403).json({ message: "משתמש לא תואם" });
+    }
+    if (!userName || !email || !password) {
+      return res.status(400).json({ message: "נא למלא את כל השדות" });
+    }
+
+    let findUser = users.find(u => u.id === userId);
+
+    if (!findUser) {
+      return res.status(404).json({ message: "משתמש לא נמצא" });
+    }
+     const changUser =  users.map(user => {if (userId === user.id) {
+      return {...findUser, userName:userName,email:email,password:password}
+    }else {
+      return user
+    }})
+    users = changUser
+    
+    return res.status(200).json({
+      message: "משתמש שונה",
+      changUser: {userName,email}
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: "שגיאת שרת" ,error});
   }
 });
 

@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 const Register = () => {
   return (
     <View>
-      <Text>Register</Text>
+      <Text className="text-red-500">Register</Text>
     </View>
   );
 };
